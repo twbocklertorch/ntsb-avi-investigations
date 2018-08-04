@@ -1,0 +1,30 @@
+<!--
+  Generated template for the AircraftDetailPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+      <button right ion-button menuToggle>
+          <ion-icon name="menu"></ion-icon>
+      </button>
+      <ion-title>AircraftDetailPage</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <ion-card *ngFor="let aircraft of (aircraftList | async)?.slice().reverse()">
+    <ion-card-header>Tail #: {{aircraft.regis_no}}</ion-card-header>
+    <ion-card-content>
+      {{aircraft.acft_make}} {{aircraft.acft_series}}<br />
+      Owner: {{aircraft.oper_name}}<br />
+      Date of Last Inspection: {{aircraft.date_last_insp}}<br />
+      Aircraft Serial No: {{aircraft.acft_serial_no}}<br />
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

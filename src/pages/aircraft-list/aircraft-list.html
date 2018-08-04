@@ -1,0 +1,19 @@
+<ion-content padding>
+    <ion-searchbar
+    [(ngModel)]="srchTerm"
+    [showCancelButton]="shouldShowCancel"
+    (ionInput)="getSearchItems($event)"
+    (ionCancel)="onCancel($event)">
+  </ion-searchbar>
+  <ion-list>
+    <ion-item *ngFor="let aircraft of aircraftArr let i = index" detail-push navPush="AircraftDetailPage" [navParams]="{aircraft_ev_id:aircraft.ev_id}">
+      {{aircraft.regis_no}}
+    </ion-item>
+  </ion-list>
+  <ion-infinite-scroll (ionInfinite)="doInfinite($event)" threshold="25%">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more data...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

@@ -1,0 +1,22 @@
+<ion-header>
+
+  <ion-navbar>
+      <button right ion-button menuToggle>
+          <ion-icon name="menu"></ion-icon>
+      </button>
+      <ion-title>Event Details</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <ion-card *ngFor="let event of (eventList | async)?.slice().reverse()">
+    <ion-card-header>NTSB #: {{event.ntsb_no}}</ion-card-header>
+    <ion-card-content>
+      Date: {{event.ev_date}}<br />
+      Location: {{event.apt_name}}<br />
+      Mid air collision?: {{event.mid_air}}<br />
+    </ion-card-content>
+  </ion-card>
+</ion-content>
