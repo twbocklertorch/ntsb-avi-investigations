@@ -1,0 +1,13 @@
+<ion-content padding>
+  <ion-searchbar
+    [(ngModel)]="srchTerm"
+    [showCancelButton]="shouldShowCancel"
+    (ionInput)="getSearchItems($event)"
+    (ionCancel)="onCancel($event)">
+  </ion-searchbar>
+  <ion-list>
+    <ion-item *ngFor="let event of (eventList | async)?.slice().reverse()" detail-push navPush="EventDetailPage" [navParams]="{event_ev_id:event.ev_id}">
+      Date: {{event.ev_date}}
+    </ion-item>
+  </ion-list>
+</ion-content>
