@@ -4,8 +4,6 @@ import { IonicPage } from 'ionic-angular/navigation/ionic-page';
 import { Observable } from 'rxjs/Observable';
 import { EventListService } from '../../services/event-list.service';
 import { Event } from '../../model/event/event.model';
-import { EventDetailPage } from '../event-detail/event-detail';
-import { AngularFirestoreCollection } from 'angularfire2/firestore';
 
 @IonicPage()
 @Component({
