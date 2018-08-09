@@ -25,12 +25,14 @@ export class MapPage {
 
   ionViewDidLoad() {
     this.loadMap();
-    this.loadEventsOnMap();
+    //this.loadEventsOnMap();
+    this.loadMockData();
   }
 
   loadMap(){
  
     let latLng = new google.maps.LatLng(39.8283, -98.5795);
+    //let latLng = new google.maps.LatLng(33.1972, -96.6398);
  
     let mapOptions = {
       center: latLng,
@@ -40,8 +42,54 @@ export class MapPage {
  
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
-    //this.addMarker();
+    this.addMarker(latLng);
  
+  }
+
+  loadMockData() {
+    let map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 3,
+      center: new google.maps.LatLng(33.1972, -96.6398),
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+
+    this.eventListService.getEventList().valueChanges().subscribe(events => {
+      for (let i = 0; i < events.length; i++) {
+        let fullAddr = events[i].ev_city + ', ' + events[i].ev_state + '  ' + events[i].ev_site_zipcode;
+        let zip = events[i].ev_site_zipcode;
+
+        this.getLatLong(map, fullAddr);
+        }
+    });
+  }
+
+  getLatLong(map, fullAddr) {
+    var locations = [];
+    let geocoder = new google.maps.Geocoder();
+    let latLng: any;
+    var infowindow = new google.maps.InfoWindow();
+
+    var marker, i;
+    
+    return geocoder.geocode({ address: fullAddr }, function (results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+          var finalLat = results[0].geometry.location.lat();
+          var finalLng = results[0].geometry.location.lng();
+
+          locations.push(fullAddr, finalLat, finalLng);
+          marker = new google.maps.Marker({
+            position: new google.maps.LatLng(finalLat, finalLng),
+            map: map
+          });
+
+          google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+              infowindow.setContent(fullAddr);
+              infowindow.open(map, marker);
+            }
+          })(marker, i));
+        }
+    });   
   }
 
   loadEventsOnMap() {
@@ -52,9 +100,36 @@ export class MapPage {
       for (let i = 0; i < events.length; i++) {
         //if (events[i].ev_)
         this.eventsArr.push(events[i]);
+        /*
+        return new Promise(function(resolve, reject) {
+          let fullAddr = events[i].ev_city + ', ' + events[i].ev_state + '  ' + events[i].ev_site_zipcode;
+          let geocoder = new google.maps.Geocoder();
+          let latLng: any;
 
-        latLng = this.lookupLatLng(events[i].ev_city, events[i].ev_state, events[i].ev_site_zipcode);
-        this.addMarker(latLng);
+          geocoder.geocode({ address: fullAddr }, function (results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                var finalLat = results[0].geometry.location.lat();
+                var finalLng = results[0].geometry.location.lng();
+    
+                //latLng = new google.maps.LatLng(finalLat, finalLng);
+                //latLng = new google.maps.LatLng(33.1972, -96.6398);
+
+                //this.addMarker(latLng);
+                let marker = new google.maps.Marker({
+                  map: this.map,
+                  animation: google.maps.Animation.DROP,
+                  position: {lat: 33.1972, lng: -96.6398}
+                  //position: this.map.getCenter()
+                });
+
+                //marker.setMap(map);
+              }
+          });          
+        });
+        */
+
+        //latLng = await this.lookupLatLng(events[i].ev_city, events[i].ev_state, events[i].ev_site_zipcode);
+        //this.addMarker(latLng);
 
         // if (events[i].latitude && events[i].longitude) {
         //   if (events[i].latitude != '0' && events[i].longitude != '0') {
@@ -62,6 +137,7 @@ export class MapPage {
         //   }
         // }
       }
+      
       //console.log(this.aircraftArr);
       this.allEvents = this.eventsArr;
     });
@@ -131,6 +207,7 @@ export class MapPage {
         }
 
     });
+
     return latLng;
 }
 

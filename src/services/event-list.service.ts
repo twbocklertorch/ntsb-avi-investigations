@@ -14,6 +14,7 @@ export class EventListService {
     }
 
     getEventList() {
+        //return this.itemsCollection = this.afs.collection<Event>('events', ref => ref.where('ev_date', '>', '8/5/2018'));
         return this.itemsCollection = this.afs.collection<Event>('events', ref => ref.where('ev_id', '==', '20001211X11043'));
         //return this.afs.collection<Event>('events', ref => ref.where('ev_id', '==', '20001204X00000')); 
     }
