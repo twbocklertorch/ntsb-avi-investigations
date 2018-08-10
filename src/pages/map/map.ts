@@ -24,191 +24,162 @@ export class MapPage {
   }
 
   ionViewDidLoad() {
-    this.loadMap();
+    //this.loadMap();
     //this.loadEventsOnMap();
-    this.loadMockData();
+    this.loadEventData();
   }
 
-  loadMap(){
- 
-    let latLng = new google.maps.LatLng(39.8283, -98.5795);
-    //let latLng = new google.maps.LatLng(33.1972, -96.6398);
- 
-    let mapOptions = {
-      center: latLng,
-      zoom: 4,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    }
- 
-    this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
-
-    this.addMarker(latLng);
- 
-  }
-
-  loadMockData() {
+  loadEventData() {
     let map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 3,
+      zoom: 4,
       center: new google.maps.LatLng(33.1972, -96.6398),
       mapTypeId: google.maps.MapTypeId.ROADMAP
     });
 
     this.eventListService.getEventList().valueChanges().subscribe(events => {
+      //console.log(events);
       for (let i = 0; i < events.length; i++) {
-        let fullAddr = events[i].ev_city + ', ' + events[i].ev_state + '  ' + events[i].ev_site_zipcode;
-        let zip = events[i].ev_site_zipcode;
+        //console.log(events[i].ev_id);
+        let isState = this.isUSAState(events[i].ev_state);
 
-        this.getLatLong(map, fullAddr);
+        if (isState) {
+          let fullAddr = events[i].ev_city + ', ' + events[i].ev_state + '  ' + events[i].ev_site_zipcode;
+          let zip = events[i].ev_site_zipcode;
+  
+          this.addMarker(map, events[i]);
         }
+        }
+      console.log('loop complete');
     });
   }
 
-  getLatLong(map, fullAddr) {
-    var locations = [];
-    let geocoder = new google.maps.Geocoder();
-    let latLng: any;
-    var infowindow = new google.maps.InfoWindow();
+  addMarker(map, event){
+    try {
+        let fullAddr = event.ev_city + ', ' + event.ev_state + '  ' + event.ev_site_zipcode;
+        //console.log(event.ev_id + ": " + fullAddr);
+        let geocoder = new google.maps.Geocoder();
+        let latLng: any;
 
-    var marker, i;
-    
-    return geocoder.geocode({ address: fullAddr }, function (results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-          var finalLat = results[0].geometry.location.lat();
-          var finalLng = results[0].geometry.location.lng();
-
-          locations.push(fullAddr, finalLat, finalLng);
-          marker = new google.maps.Marker({
-            position: new google.maps.LatLng(finalLat, finalLng),
-            map: map
-          });
-
-          google.maps.event.addListener(marker, 'click', (function(marker, i) {
-            return function() {
-              infowindow.setContent(fullAddr);
-              infowindow.open(map, marker);
-            }
-          })(marker, i));
-        }
-    });   
-  }
-
-  loadEventsOnMap() {
-    
-    this.eventListService.getEventList().valueChanges().subscribe(events => {
-      let latLng: any;
-      
-      for (let i = 0; i < events.length; i++) {
-        //if (events[i].ev_)
-        this.eventsArr.push(events[i]);
-        /*
-        return new Promise(function(resolve, reject) {
-          let fullAddr = events[i].ev_city + ', ' + events[i].ev_state + '  ' + events[i].ev_site_zipcode;
-          let geocoder = new google.maps.Geocoder();
-          let latLng: any;
-
-          geocoder.geocode({ address: fullAddr }, function (results, status) {
+        // Can't rely on clean NTSB data, so go find the lat/lng through geocode
+        geocoder.geocode({ address: fullAddr }, function (results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
                 var finalLat = results[0].geometry.location.lat();
                 var finalLng = results[0].geometry.location.lng();
-    
-                //latLng = new google.maps.LatLng(finalLat, finalLng);
-                //latLng = new google.maps.LatLng(33.1972, -96.6398);
 
-                //this.addMarker(latLng);
+                latLng = new google.maps.LatLng({lat: finalLat, lng: finalLng})
+                //console.log(latLng);
+
                 let marker = new google.maps.Marker({
-                  map: this.map,
+                  map: map,
                   animation: google.maps.Animation.DROP,
-                  position: {lat: 33.1972, lng: -96.6398}
-                  //position: this.map.getCenter()
+                  //position: new google.maps.LatLng(finalLat, finalLng),
+                  position: latLng,
                 });
-
-                //marker.setMap(map);
+              
+                let content = "<h4>" + event.ev_city + ", " + event.ev_state + "</h4>";     
+            
+                let infoWindow = new google.maps.InfoWindow({
+                  content: content
+                });
+              
+                google.maps.event.addListener(marker, 'click', () => {
+                  infoWindow.open(this.map, marker);
+                });
               }
-          });          
+
         });
-        */
+    }
+    catch(e) {
+      console.log(e);
+    }
+  }
 
-        //latLng = await this.lookupLatLng(events[i].ev_city, events[i].ev_state, events[i].ev_site_zipcode);
-        //this.addMarker(latLng);
+  isUSAState(state) {
+    switch (state){
+      case "AL":
+      case "AK":
+      case "AR":
+      case "AZ":
+      case "CA":
+      case "CO":
+      case "CT":
+      case "DE":
+      case "FL":
+      case "GA":
+      case "HI":
+      case "ID":
+      case "IL":
+      case "IN":
+      case "IA":
+      case "KS":
+      case "KY":
+      case "LA":
+      case "ME":
+      case "MD":
+      case "MA":
+      case "MI":
+      case "MN":
+      case "MS":
+      case "MO":
+      case "MT":
+      case "NE":
+      case "NV":
+      case "NH":
+      case "NJ":
+      case "NM":
+      case "NY":
+      case "NC":
+      case "ND":
+      case "OH":
+      case "OK":
+      case "OR":
+      case "PA":
+      case "RI":
+      case "SC":
+      case "SD":
+      case "TN":
+      case "TX":
+      case "UT":
+      case "VT":
+      case "VA":
+      case "WA":
+      case "WV":
+      case "WI":
+      case "WY":
+        return true;
+      default:
+        return false;
+    }
+  }
 
-        // if (events[i].latitude && events[i].longitude) {
-        //   if (events[i].latitude != '0' && events[i].longitude != '0') {
-        //     this.addMarker(events[i].latitude, events[i].longitude);
-        //   }
-        // }
+}
+
+      //event.latitude, event.longitude
+      // example: lat: 0973321N, lng: 2132132E
+      /*
+      let latDir = event.latitude.substr(event.latitude.length-1); // 'N'
+      let latCoor = event.latitude.substr(0, event.latitude.indexOf(latDir)); // '97.656565
+
+      let lngDir = event.longitude.substr(event.longitude.length-1); // 'W'
+      let lngCoor = event.longitude.substr(0,event.longitude.indexOf(lngDir)); // '97.656565
+
+      let finalLat = 0;
+      let finalLng = 0;
+
+      if (latDir == 'S') {
+        latCoor = '-' + latCoor.substr(0,2) + '.' + latCoor.substr(3,latCoor.length);
       }
-      
-      //console.log(this.aircraftArr);
-      this.allEvents = this.eventsArr;
-    });
-  }
+      else {
+        latCoor = latCoor.substr(0,2) + '.' + latCoor.substr(3,latCoor.length);
+      }
+    
+      if (lngDir == 'W') {
+        lngCoor = '-' + lngCoor.substr(0,3) + '.' + lngCoor.substr(4,lngCoor.length);
+      }
+      else {
+        lngCoor = lngCoor.substr(0,3) + '.' + lngCoor.substr(4,lngCoor.length);
+      }
 
-  addMarker(latLng){
- 
-    // let latDir = lati.substr(lati.length-1);
-    // let latCoor = lati.substr(0,lati.indexOf(latDir));
-
-    // let lngDir = lngi.substr(lngi.length-1);
-    // let lngCoor = lngi.substr(0,lngi.indexOf(lngDir));
-
-    // let finalLat = 0;
-    // let finalLng = 0;
-
-    // if (latDir == 'S') {
-    //   latCoor = '-' + latCoor;
-    // }
-    // finalLat = parseInt(latCoor);
-
-    // if (lngDir == 'W') {
-    //   lngCoor = '-' + lngCoor;
-    // }
-    // finalLng = parseInt(lngCoor);
-
-    //let latLng = new google.maps.LatLng({lat: finalLat, lng: finalLng});
-
-    //let latLng = this.lookupLatLng();
-
-    let marker = new google.maps.Marker({
-      map: this.map,
-      animation: google.maps.Animation.DROP,
-      position: latLng
-      //position: this.map.getCenter()
-    });
-   
-    let content = "<h4>Information!</h4>";         
- 
-    this.addInfoWindow(marker, content);
-   
-  }
-
-  addInfoWindow(marker, content){
- 
-    let infoWindow = new google.maps.InfoWindow({
-      content: content
-    });
-   
-    google.maps.event.addListener(marker, 'click', () => {
-      infoWindow.open(this.map, marker);
-    });
-   
-  }
-
-  lookupLatLng(city, state, zip) {
-    let fullAddr = city + ', ' + state + '  ' + zip;
-    let geocoder = new google.maps.Geocoder();
-    let latLng: any;
-
-    geocoder.geocode({ address: fullAddr }, function (results, status) {
-        if (status == google.maps.GeocoderStatus.OK) {
-            var finalLat = results[0].geometry.location.lat();
-            var finalLng = results[0].geometry.location.lng();
-
-            latLng = new google.maps.LatLng({lat: finalLat, lng: finalLng})
-        }
-
-    });
-
-    return latLng;
-}
-
-}
+      finalLat = parseFloat(latCoor);
+      finalLng = parseFloat(lngCoor);
+      */
