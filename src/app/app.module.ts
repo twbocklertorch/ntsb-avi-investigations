@@ -16,6 +16,7 @@ import { EventListService } from '../services/event-list.service';
 import { AircraftListPage } from '../pages/aircraft-list/aircraft-list';
 import { EventListPage } from '../pages/event-list/event-list';
 import { MapPage } from '../pages/map/map';
+import { IonicStorageModule } from '@ionic/storage';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,11 @@ import { MapPage } from '../pages/map/map';
     AngularFireModule.initializeApp(FIREBASE_CONFIG),
     AngularFirestoreModule.enablePersistence(),
     AngularFireDatabaseModule,
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    IonicStorageModule.forRoot({
+      name: 'ntsb-cache',
+         driverOrder: ['indexeddb', 'sqlite', 'websql']
+    })
   ],
   bootstrap: [IonicApp],
   entryComponents: [
