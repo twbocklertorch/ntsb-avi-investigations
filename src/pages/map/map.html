@@ -1,3 +1,7 @@
   <ion-content>
-    <div #map id="map"></div> 
+      <ion-refresher (ionRefresh)="forceReload($event)">
+        <ion-refresher-content refreshingText="Reload from API...">
+        </ion-refresher-content>
+      </ion-refresher>
+      <div #map id="map"></div> 
   </ion-content>

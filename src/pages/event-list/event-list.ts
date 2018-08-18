@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
-import { IonicPage } from 'ionic-angular/navigation/ionic-page';
+import { Component, ViewChild, ElementRef } from '@angular/core';
+import { IonicPage, NavController, NavParams, ToastController } from 'ionic-angular';
 import { Observable } from 'rxjs/Observable';
 import { EventListService } from '../../services/event-list.service';
 import { Event } from '../../model/event/event.model';
+import { Storage } from '@ionic/storage';
 
 @IonicPage()
 @Component({
@@ -12,16 +12,50 @@ import { Event } from '../../model/event/event.model';
 })
 export class EventListPage {
 
-  eventList: Observable<Event[]>;
-  //eventList: AngularFirestoreCollection<Event>;
+  eventList = [];
 
   // https://blog.ionicframework.com/building-ionic-apps-with-firestore/
 
-  constructor(public navCtrl: NavController, private eventListService: EventListService) {
-    this.eventList = this.eventListService.getEventList().valueChanges();
-
-    // this.eventList.subscribe(data => {
-    //   console.log(data);
-    // });
+  constructor(public navCtrl: NavController, 
+    public navParams: NavParams, 
+    private eventListService: EventListService,
+    private storage: Storage, 
+    private toastCtrl: ToastController) {
    }
+
+   ionViewDidLoad() {
+    this.loadEventData();
+  }
+
+  loadEventData() {
+    // Get cached events or get from Firestore if no cache exists
+    this.storage.get('events').then((events) => {
+      if (events) {
+        this.eventList = events;
+      }
+      else {
+        this.eventListService.getEventList().valueChanges().subscribe(events => {
+          this.eventList = events;
+          this.storage.set('events', events);
+        });
+      }
+    });
+
+    this.presentToast('Data has been loaded');
+  }
+
+  presentToast(messageTxt) {
+    let toast = this.toastCtrl.create({
+      message: messageTxt,
+      duration: 3000,
+      position: 'top'
+    });
+  
+    toast.onDidDismiss(() => {
+      console.log('Dismissed toast');
+    });
+  
+    toast.present();
+  }
+
 }

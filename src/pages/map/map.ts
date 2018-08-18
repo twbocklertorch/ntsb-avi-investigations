@@ -1,8 +1,9 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, ToastController } from 'ionic-angular';
 import { Observable } from 'rxjs/Observable';
 import { EventListService } from '../../services/event-list.service';
 import { Event } from '../../model/event/event.model';
+import { Storage } from '@ionic/storage';
 
 declare var google;
 
@@ -19,7 +20,11 @@ export class MapPage {
   eventsArr = [];
   allEvents = [];
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, private eventListService: EventListService) {
+  constructor(public navCtrl: NavController, 
+    public navParams: NavParams, 
+    private eventListService: EventListService,
+    private storage: Storage, 
+    private toastCtrl: ToastController) {
     //this.itemsPerPage = 30;
   }
 
@@ -36,21 +41,40 @@ export class MapPage {
       mapTypeId: google.maps.MapTypeId.ROADMAP
     });
 
-    this.eventListService.getEventList().valueChanges().subscribe(events => {
-      //console.log(events);
-      for (let i = 0; i < events.length; i++) {
-        //console.log(events[i].ev_id);
-        let isState = this.isUSAState(events[i].ev_state);
-
-        if (isState) {
-          let fullAddr = events[i].ev_city + ', ' + events[i].ev_state + '  ' + events[i].ev_site_zipcode;
-          let zip = events[i].ev_site_zipcode;
-  
-          this.addMarker(map, events[i]);
-        }
-        }
-      console.log('loop complete');
+    // Get cached events or get from Firestore if no cache exists
+    let allEvents;
+    this.storage.get('events').then((events) => {
+      if (events) {
+        allEvents = events;
+        this.addPins(map, allEvents);
+      }
+      else {
+        this.eventListService.getEventList().valueChanges().subscribe(events => {
+          allEvents = events;
+          this.storage.set('events', events);
+          this.addPins(map, allEvents);
+        });
+      }
     });
+
+}
+
+  addPins(map, allEvents) {
+    //console.log(events);
+    for (let i = 0; i < allEvents.length; i++) {
+      //console.log(events[i].ev_id);
+      let isState = this.isUSAState(allEvents[i].ev_state);
+
+      if (isState) {
+        //let fullAddr = allEvents[i].ev_city + ', ' + allEvents[i].ev_state + '  ' + allEvents[i].ev_site_zipcode;
+        //let zip = allEvents[i].ev_site_zipcode;
+
+        this.addMarker(map, allEvents[i]);
+      }
+    }   
+
+    this.presentToast('Data has been loaded');
+
   }
 
   addMarker(map, event){
@@ -152,7 +176,23 @@ export class MapPage {
     }
   }
 
+  presentToast(messageTxt) {
+    let toast = this.toastCtrl.create({
+      message: messageTxt,
+      duration: 3000,
+      position: 'top'
+    });
+  
+    toast.onDidDismiss(() => {
+      console.log('Dismissed toast');
+    });
+  
+    toast.present();
+  }
+
 }
+
+
 
       //event.latitude, event.longitude
       // example: lat: 0973321N, lng: 2132132E
